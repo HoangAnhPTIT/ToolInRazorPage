@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
@@ -18,26 +19,29 @@ namespace SampleApp.Pages
         }
 
         [BindProperty]
-        public IEnumerable<FileItem> PhysicalFiles { get; set; }
-
-        public IFileInfo CurrentFile { get; set; }
+        public List<FileItem> SourceFiles { get; set; }
 
         [BindProperty]
+        public List<FileItem> TargetFiles { get; set; }
+
         public FileCompares FileCompares { get; set; }
 
 
         public void OnGet()
         {
-            PhysicalFiles = _fileProvider.GetDirectoryContents(string.Empty).Select(x => new FileItem {
+            SourceFiles = _fileProvider.GetDirectoryContents(string.Empty).Select(x => new FileItem {
                 FileLength = x.Length,
                 FileName = x.Name,
                 FilePath = x.PhysicalPath,
-                IsSelected = true
-            });
+                IsSelected = false
+            }).ToList();
+
+            TargetFiles = new List<FileItem>(SourceFiles);
         }
 
-        public IActionResult OnPostCompare(IEnumerable<FileItem> fileItems)
+        public IActionResult OnPostCompare(IEnumerable<FileItem> SourceFiles, IEnumerable<FileItem> TargetFiles)
         {
+            var req = Request;
             OnGet();
             //CurrentFile = PhysicalFiles.FirstOrDefault();
             return Page();
