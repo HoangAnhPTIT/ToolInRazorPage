@@ -13,35 +13,38 @@
                 <table class="table">
                     <thead>
                         <tr>
-                                <th></th>
-                                <th>
-                                    Name / Path
-                                </th>
-                                <th>
-                                    Size (bytes)
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                            <th></th>
+                            <th>
+                                Name / Path
+                            </th>
+                            <th>
+                                Size (bytes)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         @for (var i = 0; i < Model.SourceFiles.Count(); i++)
-                            {
-                                <tr>
-                                    <td>
+                        {
+                            <tr>
+                                <td>
                                     <input class="select-checkbox" FileDirection="0" asp-for="SourceFiles[i].IsSelected">
                                     <input hidden asp-for="SourceFiles[i].FileName">
-                                    </td>
-                                    <td>
+                                    <input hidden asp-for="SourceFiles[i].FilePath">
+                                    <input hidden asp-for="SourceFiles[i].FileLength">
+                                    <input hidden asp-for="SourceFiles[i].FileDirection">
+                                </td>
+                                <td>
                                     <b>@Model.SourceFiles.ElementAt(i).FileName</b><br>
                                     @Model.SourceFiles.ElementAt(i).FilePath
-                                    </td>
-                                    <td class="text-center">
+                                </td>
+                                <td class="text-center">
                                     @Model.SourceFiles.ElementAt(i).FileLength.ToString("N0")
-                                    </td>   
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
             <div>
                 <h4>Chọn file so sánh </h4>
@@ -65,6 +68,9 @@
                                 <td>
                                     <input class="select-checkbox" FileDirection="0" asp-for="TargetFiles[i].IsSelected">
                                     <input hidden asp-for="TargetFiles[i].FileName">
+                                    <input hidden asp-for="TargetFiles[i].FilePath">
+                                    <input hidden asp-for="TargetFiles[i].FileLength">
+                                    <input hidden asp-for="TargetFiles[i].FileDirection">
                                 </td>
                                 <td>
                                     <b>@Model.TargetFiles.ElementAt(i).FileName</b><br>
@@ -79,49 +85,25 @@
                 </table>
             </div>
         </div>
-
-        <button asp-page-handler="Compare" class="btn btn-outline-primary" type="submit">So sánh</button>
-    </form>
-
-
-</div>
-@*@section Scripts {
-    <script>
-        async function AJAXSubmit(oFormElement) {
-            
-            const formData = new FormData(oFormElement);
-            debugger;
-
-            const sourceItems = getValueCheckBox(0);
-            const targetItems = getValueCheckBox(1);
-            try {
-                const response = await fetch(oFormElement.action, {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': getCookie('RequestVerificationToken')
-                    },
-                    body: formData
-                });
-
-                oFormElement.elements.namedItem("result").value =
-                    'Result: ' + response.status + ' ' + response.statusText;
-            } catch (error) {
-                console.error('Error:', error);
+        @if (Model.ErrorMessage != null && Model.ErrorMessage.Count() > 0)
+        {
+            @foreach (var message in Model.ErrorMessage)
+            {
+                <p class="text-danger">@message</p>
             }
         }
-
-        function getCookie(name) {
-            var value = "; " + document.cookie;
-            var parts = value.split("; " + name + "=");
-            if (parts.length == 2) return parts.pop().split(";").shift();
+        @if (Model.IsCompareProcessing)
+        {
+            <button class="btn btn-primary" type="button" disabled>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Loading...
+            </button>
+        }
+        else
+        {
+            <button asp-page-handler="Compare" class="btn btn-outline-primary" type="submit">So sánh</button>
         }
 
-        function getValueCheckBox(fileDirection){
-            const sourceElements = $(`[filedirection=${fileDirection}][data_val=true]`)
-            if (!sourceElements.length) return [];
+    </form>
 
-            return sourceElements.get();
-        }
-    </script>
-}
-*@
+</div>
