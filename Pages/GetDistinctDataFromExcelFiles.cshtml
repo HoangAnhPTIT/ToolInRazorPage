@@ -1,0 +1,90 @@
+﻿@page
+@model SampleApp.Pages.GetDistinctDataFromExcelFilesModel
+@{
+}
+<h1>Lọc trùng dữ liệu</h1>
+<div>
+
+    <form method="post">
+        <div class="d-flex" style="gap: 10px;">
+            <div>
+                <h4>Chọn file đầu vào</h4>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>
+                                Name / Path
+                            </th>
+                            <th>
+                                Size (bytes)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.PhysicalFiles.Count(); i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input asp-for="PhysicalFiles.ElementAt(i).IsSelected">
+                                    <input hidden asp-for="PhysicalFiles.ElementAt(i).FileName">
+                                    <input hidden value="0" asp-for="PhysicalFiles.ElementAt(i).FileDirection">
+                                </td>
+                                <td>
+                                    <input asp-for="PhysicalFiles.ElementAt(i).FileName">
+                                    <b>@Model.PhysicalFiles.ElementAt(i).FileName</b><br>
+                                    @Model.PhysicalFiles.ElementAt(i).FilePath
+                                </td>
+                                <td class="text-center">
+                                    @Model.PhysicalFiles.ElementAt(i).FileLength.ToString("N0")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+@*
+            <div>
+                <h4>Chọn file so sánh </h4>
+
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th></th>
+                            <th>
+                                Name / Path
+                            </th>
+                            <th>
+                                Size (bytes)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.PhysicalFiles.Count(); i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input asp-for="PhysicalFiles.ElementAt(i).IsSelected">
+                                    <input hidden asp-for="PhysicalFiles.ElementAt(i).FileName">
+                                    <input hidden value="1" asp-for="PhysicalFiles.ElementAt(i).FileDirection">
+                                </td>
+                                <td>
+                                    <b>@Model.PhysicalFiles.ElementAt(i).FileName</b><br>
+                                    @Model.PhysicalFiles.ElementAt(i).FilePath
+                                </td>
+                                <td class="text-center">
+                                    @Model.PhysicalFiles.ElementAt(i).FileLength.ToString("N0")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>*@
+        </div>
+
+        <button asp-page-handler="Compare" class="btn btn-outline-primary" type="submit">So sánh</button>
+    </form>
+
+
+</div>
