@@ -40,7 +40,7 @@ namespace SampleApp.Controllers
             _fileSizeLimit = config.GetValue<long>("FileSizeLimit");
 
             // To save physical files to a path provided by configuration:
-            _targetFilePath = env.WebRootPath + "\\Store";
+            _targetFilePath = env.WebRootPath;
 
             // To save physical files to the temporary files folder, use:
             //_targetFilePath = Path.GetTempPath();

@@ -2,6 +2,11 @@
 @model SampleApp.Pages.GetDistinctDataFromExcelFilesModel
 @{
 }
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script type="text/javascript">
+    toastr.success('Have fun storming the castle!', 'Miracle Max Says')
+</script>
 <h1>Lọc trùng dữ liệu</h1>
 <div>
 
@@ -15,10 +20,10 @@
                         <tr>
                             <th></th>
                             <th>
-                                Name / Path
+                                Tên file
                             </th>
                             <th>
-                                Size (bytes)
+                                Kích thước (bytes)
                             </th>
                         </tr>
                     </thead>
@@ -35,7 +40,6 @@
                                 </td>
                                 <td>
                                     <b>@Model.SourceFiles.ElementAt(i).FileName</b><br>
-                                    @Model.SourceFiles.ElementAt(i).FilePath
                                 </td>
                                 <td class="text-center">
                                     @Model.SourceFiles.ElementAt(i).FileLength.ToString("N0")
@@ -54,10 +58,10 @@
                         <tr>
                             <th></th>
                             <th>
-                                Name / Path
+                                Tên file
                             </th>
                             <th>
-                                Size (bytes)
+                                Kích thước (bytes)
                             </th>
                         </tr>
                     </thead>
@@ -74,7 +78,6 @@
                                 </td>
                                 <td>
                                     <b>@Model.TargetFiles.ElementAt(i).FileName</b><br>
-                                    @Model.TargetFiles.ElementAt(i).FilePath
                                 </td>
                                 <td class="text-center">
                                     @Model.TargetFiles.ElementAt(i).FileLength.ToString("N0")

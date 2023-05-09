@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -24,12 +25,12 @@ namespace SampleApp.Pages
         }
 
         public IList<AppFile> DatabaseFiles { get; private set; }
-        public IDirectoryContents PhysicalFiles { get; private set; }
+        public List<IFileInfo> PhysicalFiles { get; private set; }
 
         public async Task OnGetAsync()
         {
             DatabaseFiles = await _context.File.AsNoTracking().ToListAsync();
-            PhysicalFiles = _fileProvider.GetDirectoryContents(string.Empty);
+            PhysicalFiles = _fileProvider.GetDirectoryContents(string.Empty).Where(x => x.Name.Contains("xlsx")).ToList();
         }
 
         public async Task<IActionResult> OnGetDownloadDbAsync(int? id)

@@ -52,8 +52,8 @@ namespace SampleApp
             });
             #endregion
 
-            // To list physical files from a path provided by configuration:
-            var physicalProvider = new PhysicalFileProvider(_env.WebRootPath + "\\Store");
+            // To list physical files from a path provided by configuration:    
+            var physicalProvider = new PhysicalFileProvider(_env.WebRootPath);
 
             // To list physical files in the temporary files folder, use:
             //var physicalProvider = new PhysicalFileProvider(Path.GetTempPath());
