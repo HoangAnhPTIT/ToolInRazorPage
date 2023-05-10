@@ -214,7 +214,7 @@ namespace SampleApp.Controllers
         #region snippet_UploadPhysical
         [HttpPost]
         [DisableFormValueModelBinding]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadPhysical()
         {
             if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
