@@ -7,6 +7,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using SampleApp.Data;
 using SampleApp.Filters;
+using SampleApp.Services;
+using SampleApp.Services.Implements;
 using System.Reflection;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
@@ -59,6 +61,7 @@ namespace SampleApp
             //var physicalProvider = new PhysicalFileProvider(Path.GetTempPath());
 
             services.AddSingleton<IFileProvider>(physicalProvider);
+            services.AddScoped<IValidateFilePhoneNumber, ValidateFilePhoneNumber>();
 
             services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
         }

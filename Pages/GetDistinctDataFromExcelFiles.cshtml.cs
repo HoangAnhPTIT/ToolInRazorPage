@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using OfficeOpenXml;
 using SampleApp.Models;
+using SampleApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,7 +50,6 @@ namespace SampleApp.Pages
         {
             try
             {
-                IsCompareProcessing = true;
                 SourceFiles = SourceFiles.Where(x => x.IsSelected).ToList();
                 TargetFiles = TargetFiles.Where(x => x.IsSelected).ToList();
 
@@ -82,44 +82,41 @@ namespace SampleApp.Pages
 
                 foreach (var file in SourceFiles)
                 {
-                    using (var package = new ExcelPackage(new FileInfo(file.FilePath)))
-                    {
-                        var ws = package.Workbook.Worksheets[0];
+                    using var package = new ExcelPackage(new FileInfo(file.FilePath));
+                    var ws = package.Workbook.Worksheets[0];
 
-                        for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
+                    for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
+                    {
+                        var value = ws.Cells[rw, 1].Value;
+                        if (value != null && !string.IsNullOrEmpty(value.ToString()))
                         {
-                            var value = ws.Cells[rw, 1].Value;
-                            if (value != null && !string.IsNullOrEmpty(value.ToString()))
-                            {
-                                var phoneNumber = StandardizedPhoneNumber(value);
-                                set.Add(phoneNumber.ToString());
-                            }
+                            var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(value);
+                            set.Add(phoneNumber.ToString());
                         }
                     }
                 }
 
                 foreach (var file in TargetFiles)
                 {
-                    using (var package = new ExcelPackage(new FileInfo(file.FilePath)))
-                    {
-                        var ws = package.Workbook.Worksheets[0];
+                    using var package = new ExcelPackage(new FileInfo(file.FilePath));
+                    var ws = package.Workbook.Worksheets[0];
 
-                        for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
+                    for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
+                    {
+                        var value = ws.Cells[rw, 1].Value;
+                        if (value != null && !string.IsNullOrEmpty(value.ToString()))
                         {
-                            var value = ws.Cells[rw, 1].Value;
-                            if (value != null && !string.IsNullOrEmpty(value.ToString()))
+                            var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(value);
+
+                            if (set.Add(phoneNumber))
                             {
-                                if (set.Add(value.ToString()))
-                                {
-                                    var phoneNumber = StandardizedPhoneNumber(value);
-                                    set.Add(phoneNumber.ToString());
-                                }
+                                lines.Add(phoneNumber);
                             }
                         }
                     }
                 }
 
-                Workbook book = new Workbook();
+                using Workbook book = new Workbook();
 
                 int i = 0;
                 foreach (var chuck in lines.Chunk(1000000))
@@ -133,11 +130,9 @@ namespace SampleApp.Pages
                 using var stream = new MemoryStream();
                 book.Save(stream, SaveFormat.Xlsx);
 
-                book.Dispose();
                 var content = stream.ToArray();
-                await stream.DisposeAsync();
 
-                return Page();
+                return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8");
             }
             catch (Exception ex)
             {
@@ -146,23 +141,5 @@ namespace SampleApp.Pages
             }
         }
 
-        private static string StandardizedPhoneNumber(object text)
-        {
-            var stringValue = text.ToString();
-            if (stringValue.StartsWith("84"))
-            {
-                stringValue = stringValue.Replace("84", "0");
-            }
-            if (stringValue.StartsWith("+84"))
-            {
-                stringValue = stringValue.Replace("+84", "0");
-            }
-            if (!stringValue.StartsWith("0"))
-            {
-                stringValue = "0" + stringValue;
-            }
-
-            return stringValue;
-        }
     }
 }

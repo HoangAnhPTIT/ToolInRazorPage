@@ -1,0 +1,65 @@
+﻿@page
+@model SampleApp.Pages.ValidateFileDataPhoneNumberModel
+@{
+}
+
+
+<h1>Chuẩn hóa dữ liệu số điện thoại</h1>
+
+<div>
+    <h4>Chọn file đầu vào</h4>
+    <form method="post">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        Tên file
+                    </th>
+                    <th>
+                        Kích thước (bytes)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.SourceFiles.Count(); i++)
+                {
+                    <tr>
+                        <td>
+                            <input class="select-checkbox" FileDirection="0" asp-for="SourceFiles[i].IsSelected">
+                            <input hidden asp-for="SourceFiles[i].FileName">
+                            <input hidden asp-for="SourceFiles[i].FilePath">
+                            <input hidden asp-for="SourceFiles[i].FileLength">
+                            <input hidden asp-for="SourceFiles[i].FileDirection">
+                        </td>
+                        <td>
+                            <b>@Model.SourceFiles.ElementAt(i).FileName</b><br>
+
+                        </td>
+                        <td class="">
+                            @Model.SourceFiles.ElementAt(i).FileLength.ToString("N0")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.ErrorMessage != null && Model.ErrorMessage.Count() > 0)
+        {
+            @foreach (var message in Model.ErrorMessage)
+            {
+                                <p class="text-danger">@message</p>
+            }
+        }
+
+        <div class="d-flex align-items-center">
+            <button asp-page-handler="Handler" class="btn btn-primary me-2" type="submit">Chuẩn hóa</button>
+
+            @*<input id="flag-remove-duplication" class="me-2" asp-for="RemoveDuplication">
+            <label for="flag-remove-duplication">Loại bỏ các số bị trùng</label>*@
+        </div>
+
+    </form>
+
+
+</div>
