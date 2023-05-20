@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using SampleApp.Models;
 using SampleApp.Utilities;
@@ -10,17 +11,19 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace SampleApp.Pages
 {
     public class GetDistinctDataFromExcelFilesModel : PageModel
     {
         private readonly IFileProvider _fileProvider;
+        private readonly ILogger<GetDistinctDataFromExcelFilesModel> _logger;
 
-        public GetDistinctDataFromExcelFilesModel(IFileProvider fileProvider)
+        public GetDistinctDataFromExcelFilesModel(IFileProvider fileProvider, ILogger<GetDistinctDataFromExcelFilesModel> logger)
         {
             _fileProvider = fileProvider;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -32,7 +35,7 @@ namespace SampleApp.Pages
         [BindProperty]
         public bool IsCompareProcessing { get; set; }
 
-        public IEnumerable<string> ErrorMessage { get; set; }
+        public List<string> ErrorMessage { get; set; }
 
         public void OnGet()
         {
@@ -47,7 +50,7 @@ namespace SampleApp.Pages
             TargetFiles = new List<FileItem>(SourceFiles);
         }
 
-        public async Task<IActionResult> OnPostCompare(IEnumerable<FileItem> SourceFiles, IEnumerable<FileItem> TargetFiles)
+        public IActionResult OnPostCompare(IEnumerable<FileItem> SourceFiles, IEnumerable<FileItem> TargetFiles)
         {
             try
             {
@@ -89,21 +92,20 @@ namespace SampleApp.Pages
 
                 validatedHeader.AddRange(headers.First());
 
-                if(TargetFiles.Count() > 1)
+                if (TargetFiles.Count() > 1)
                 {
                     for (var inx = 0; inx < headers.Count - 1; inx++)
                     {
                         if (!Enumerable.SequenceEqual(headers[inx], headers[inx + 1]))
                         {
-                            ModelState.AddModelError("Target file not match headers", $"File thứ {inx} không khớp header với file thứ {inx + 1} ở file so sánh");
+                            ModelState.AddModelError("Target file not match headers", $"File thứ {inx + 1} không khớp header với file thứ {inx + 2} ở file so sánh");
                         }
                     }
                 }
 
-
                 if (!ModelState.IsValid)
                 {
-                    ErrorMessage = ModelState.SelectMany(x => x.Value.Errors).Select(e => e.ErrorMessage);
+                    ErrorMessage = ModelState.SelectMany(x => x.Value.Errors).Select(e => e.ErrorMessage).ToList();
                     IsCompareProcessing = false;
                     return Page();
                 }
@@ -119,10 +121,11 @@ namespace SampleApp.Pages
                     for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
                     {
                         var value = ws.Cells[rw, 1].Value;
-                        if (value != null && !string.IsNullOrEmpty(value.ToString()))
+                        if (value != null && !string.IsNullOrEmpty(value.ToString()) && Regex.Match(value.ToString(), Constant.RegexPhoneNumber).Success)
                         {
                             var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(value);
-                            set.Add(phoneNumber.ToString());
+                            if (phoneNumber.Length == 10 || phoneNumber.Length == 11)
+                                set.Add(phoneNumber.ToString());
                         }
                     }
                 }
@@ -142,22 +145,23 @@ namespace SampleApp.Pages
                         }
 
                         var valuePhoneNumer = ((IDictionary<String, Object>)obj)[validatedHeader[0]];
-                        if (valuePhoneNumer != null && !string.IsNullOrEmpty(valuePhoneNumer.ToString()))
+                        if (valuePhoneNumer != null && !string.IsNullOrEmpty(valuePhoneNumer.ToString()) && Regex.Match(valuePhoneNumer.ToString(), Constant.RegexPhoneNumber).Success)
                         {
                             var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(valuePhoneNumer);
-
-                            if (set.Add(phoneNumber))
-                            {
-                                lines.Add(obj);
-                            }
+                            if (phoneNumber.Length == 10 || phoneNumber.Length == 11)
+                                if (set.Add(phoneNumber))
+                                {
+                                    ((IDictionary<String, Object>)obj)[validatedHeader[0]] = phoneNumber;
+                                    lines.Add(obj);
+                                }
                         }
                     }
                 }
 
                 using Workbook book = new Workbook();
-
+                var chuckes = lines.Chunk(1000000);
                 int i = 0;
-                foreach (var chuck in lines.Chunk(1000000))
+                foreach (var chuck in chuckes)
                 {
                     Worksheet sheet = book.Worksheets[i];
                     sheet.Cells.ImportCustomObjects(chuck.ToArray(), 0, 0, new ImportTableOptions
@@ -165,6 +169,10 @@ namespace SampleApp.Pages
                     });
 
                     i++;
+                    if (i <= chuckes.Count() - 1)
+                    {
+                        book.Worksheets.Add();
+                    }
                 }
 
                 using var stream = new MemoryStream();
@@ -176,7 +184,7 @@ namespace SampleApp.Pages
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("SystemError", ex.Message);
+                ErrorMessage.Add(ex.Message);
                 return Page();
             }
         }

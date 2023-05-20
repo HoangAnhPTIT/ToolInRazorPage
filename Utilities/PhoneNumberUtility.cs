@@ -9,11 +9,11 @@
             {
                 stringValue = "0" + stringValue.Substring(2);
             }
-            if (stringValue.StartsWith("+84"))
+            else if (stringValue.StartsWith("+84"))
             {
                 stringValue = "0" + stringValue.Substring(3);
             }
-            if (!stringValue.StartsWith("0"))
+            else if (!stringValue.StartsWith("0"))
             {
                 stringValue = "0" + stringValue;
             }

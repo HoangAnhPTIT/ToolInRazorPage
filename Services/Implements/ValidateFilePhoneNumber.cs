@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SampleApp.Services.Implements
 {
@@ -52,23 +53,16 @@ namespace SampleApp.Services.Implements
                     }
 
                     var valuePhoneNumer = ((IDictionary<String, Object>)obj)[validatedHeader[0]];
-                    if (valuePhoneNumer != null && !string.IsNullOrEmpty(valuePhoneNumer.ToString()))
+                    if (valuePhoneNumer != null && !string.IsNullOrEmpty(valuePhoneNumer.ToString()) && Regex.Match(valuePhoneNumer.ToString(), Constant.RegexPhoneNumber).Success)
                     {
                         var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(valuePhoneNumer);
-
-                        data.TryAdd(phoneNumber, obj);
+                        if (phoneNumber.Length == 10 || phoneNumber.Length == 11)
+                        {
+                            ((IDictionary<String, Object>)obj)[validatedHeader[0]] = phoneNumber;
+                            data.TryAdd(phoneNumber, obj);
+                        }
                     }
                 }
-
-                //for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
-                //{
-                //    var value = ws.Cells[rw, 1].Value;
-                //    if (value != null && !string.IsNullOrEmpty(value.ToString()))
-                //    {
-                //        var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(value);
-                //        set.Add(phoneNumber.ToString());
-                //    }
-                //}
             }
 
             using Workbook book = new();
