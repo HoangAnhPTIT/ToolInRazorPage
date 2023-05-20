@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SampleApp.Services
 {
     public interface IValidateFilePhoneNumber
     {
-        public byte[] ValidateFile(IEnumerable<string> filePaths);
+        public byte[] ValidateFile(ModelStateDictionary modelState, IEnumerable<string> filePaths);
     }
 }

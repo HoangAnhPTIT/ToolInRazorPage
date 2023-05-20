@@ -1,17 +1,13 @@
-﻿using Aspose.Cells.Drawing;
-using Aspose.Cells;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using OfficeOpenXml;
 using SampleApp.Models;
+using SampleApp.Services;
 using SampleApp.Utilities;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using SampleApp.Services;
 
 namespace SampleApp.Pages
 {
@@ -19,6 +15,7 @@ namespace SampleApp.Pages
     {
         private readonly IFileProvider _fileProvider;
         private readonly IValidateFilePhoneNumber _validateFilePhoneNumber;
+
         public ValidateFileDataPhoneNumberModel(IFileProvider fileProvider, IValidateFilePhoneNumber validateFilePhoneNumber)
         {
             _fileProvider = fileProvider;
@@ -59,7 +56,8 @@ namespace SampleApp.Pages
                 return Page();
             }
 
-            var content = _validateFilePhoneNumber.ValidateFile(SourceFiles.Select(x => x.FilePath));
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            var content = _validateFilePhoneNumber.ValidateFile(ModelState, SourceFiles.Select(x => x.FilePath));
 
             return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8");
         }

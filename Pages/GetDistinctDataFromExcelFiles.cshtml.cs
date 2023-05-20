@@ -7,6 +7,7 @@ using SampleApp.Models;
 using SampleApp.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,6 +51,9 @@ namespace SampleApp.Pages
         {
             try
             {
+                const string PHONENUMBER = "phoneNumber";
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
                 SourceFiles = SourceFiles.Where(x => x.IsSelected).ToList();
                 TargetFiles = TargetFiles.Where(x => x.IsSelected).ToList();
 
@@ -68,6 +72,35 @@ namespace SampleApp.Pages
                     if (SourceFiles.Any(x => x.FileName == file.FileName)) ModelState.AddModelError("Duplicate File", $"File {file.FileName} đã được chọn");
                 }
 
+                List<string> validatedHeader = new();
+
+                List<List<string>> headers = new();
+                for (var f = 0; f < TargetFiles.Count(); f++)
+                {
+                    using var package = new ExcelPackage(new FileInfo(TargetFiles.ElementAt(f).FilePath));
+                    var ws = package.Workbook.Worksheets[0];
+                    var header = ExcelWorksheetExtension.GetHeaderColumns(ws);
+                    if (header.Length > 0 && header.First() != PHONENUMBER)
+                    {
+                        ModelState.AddModelError("First cell must be phoneNumber", $"File thứ {f + 1}: Cột đầu tiên không khải {PHONENUMBER}");
+                    }
+                    headers.Add(header.ToList());
+                }
+
+                validatedHeader.AddRange(headers.First());
+
+                if(TargetFiles.Count() > 1)
+                {
+                    for (var inx = 0; inx < headers.Count - 1; inx++)
+                    {
+                        if (!Enumerable.SequenceEqual(headers[inx], headers[inx + 1]))
+                        {
+                            ModelState.AddModelError("Target file not match headers", $"File thứ {inx} không khớp header với file thứ {inx + 1} ở file so sánh");
+                        }
+                    }
+                }
+
+
                 if (!ModelState.IsValid)
                 {
                     ErrorMessage = ModelState.SelectMany(x => x.Value.Errors).Select(e => e.ErrorMessage);
@@ -76,9 +109,7 @@ namespace SampleApp.Pages
                 }
 
                 HashSet<string> set = new HashSet<string>();
-                List<string> lines = new List<string>();
-
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                List<dynamic> lines = new List<dynamic>();
 
                 foreach (var file in SourceFiles)
                 {
@@ -100,17 +131,24 @@ namespace SampleApp.Pages
                 {
                     using var package = new ExcelPackage(new FileInfo(file.FilePath));
                     var ws = package.Workbook.Worksheets[0];
-
-                    for (int rw = 1; rw <= ws.Dimension.End.Row; rw++)
+                    for (int rw = 2; rw <= ws.Dimension.End.Row; rw++)
                     {
-                        var value = ws.Cells[rw, 1].Value;
-                        if (value != null && !string.IsNullOrEmpty(value.ToString()))
+                        dynamic obj = new ExpandoObject();
+                        for (int h = 0; h < validatedHeader.Count; h++)
                         {
-                            var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(value);
+                            var value = ws.Cells[rw, h + 1].Value;
+                            string valueHeader = validatedHeader[h];
+                            ((IDictionary<String, Object>)obj)[valueHeader] = value;
+                        }
+
+                        var valuePhoneNumer = ((IDictionary<String, Object>)obj)[validatedHeader[0]];
+                        if (valuePhoneNumer != null && !string.IsNullOrEmpty(valuePhoneNumer.ToString()))
+                        {
+                            var phoneNumber = PhoneNumberUtility.StandardizedPhoneNumber(valuePhoneNumer);
 
                             if (set.Add(phoneNumber))
                             {
-                                lines.Add(phoneNumber);
+                                lines.Add(obj);
                             }
                         }
                     }
@@ -122,7 +160,9 @@ namespace SampleApp.Pages
                 foreach (var chuck in lines.Chunk(1000000))
                 {
                     Worksheet sheet = book.Worksheets[i];
-                    sheet.Cells.ImportArray(chuck.ToArray(), 0, 0, true);
+                    sheet.Cells.ImportCustomObjects(chuck.ToArray(), 0, 0, new ImportTableOptions
+                    {
+                    });
 
                     i++;
                 }
@@ -140,6 +180,5 @@ namespace SampleApp.Pages
                 return Page();
             }
         }
-
     }
 }
