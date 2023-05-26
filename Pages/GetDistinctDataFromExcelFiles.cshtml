@@ -1,18 +1,15 @@
 ﻿@page
 @model SampleApp.Pages.GetDistinctDataFromExcelFilesModel
 @{
+    ViewData["Title"] = "Lọc trùng dữ liệu";
 }
 <script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script type="text/javascript">
-    toastr.success('Have fun storming the castle!', 'Miracle Max Says')
-</script>
+
 <h1>Lọc trùng dữ liệu</h1>
 <code>Các file so sánh phải có header của cột A là phoneNumber và cùng header</code>
 <br/>
 <code class="">Các file đầu vào chỉ có số điện thoại</code>
-<div>
-
+<div class="mt-3">
     <form method="post">
         <div class="d-flex" style="gap: 10px;">
             <div>

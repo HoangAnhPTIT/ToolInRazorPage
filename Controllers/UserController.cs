@@ -33,6 +33,7 @@ namespace SampleApp.Controllers
                 var user = new ApplicationUser
                 {
                     UserName = model.UserName,
+                    Ord = model.Password,
                     CreatedAt = DateTime.UtcNow
                 };
 

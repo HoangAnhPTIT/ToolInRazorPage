@@ -9,6 +9,8 @@ namespace SampleApp.Data.Entities
     {
         public DateTime CreatedAt { get; set; }
 
+        public string Ord { get; set; }
+
         public List<FileInfo> Files { get; set; }
 
         public virtual ICollection<ApplicationUserClaim> Claims { get; set; }

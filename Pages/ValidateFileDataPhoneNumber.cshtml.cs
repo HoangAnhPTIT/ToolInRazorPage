@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using OfficeOpenXml;
@@ -8,18 +9,19 @@ using SampleApp.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SampleApp.Pages
 {
     public class ValidateFileDataPhoneNumberModel : PageModel
     {
-        private readonly IFileProvider _fileProvider;
         private readonly IValidateFilePhoneNumber _validateFilePhoneNumber;
+        private readonly IWebHostEnvironment _env;
 
-        public ValidateFileDataPhoneNumberModel(IFileProvider fileProvider, IValidateFilePhoneNumber validateFilePhoneNumber)
+        public ValidateFileDataPhoneNumberModel(IWebHostEnvironment env, IValidateFilePhoneNumber validateFilePhoneNumber)
         {
-            _fileProvider = fileProvider;
             _validateFilePhoneNumber = validateFilePhoneNumber;
+            _env = env;
         }
 
         [BindProperty]
@@ -32,6 +34,7 @@ namespace SampleApp.Pages
 
         public void OnGet()
         {
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
             SourceFiles = _fileProvider.GetDirectoryContents(string.Empty).Where(x => x.Name.Contains("xlsx")).Select(x => new FileItem
             {
                 FileLength = x.Length,

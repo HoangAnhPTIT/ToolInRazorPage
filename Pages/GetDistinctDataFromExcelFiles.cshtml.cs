@@ -1,4 +1,5 @@
 ﻿using Aspose.Cells;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
@@ -17,12 +18,12 @@ namespace SampleApp.Pages
 {
     public class GetDistinctDataFromExcelFilesModel : PageModel
     {
-        private readonly IFileProvider _fileProvider;
         private readonly ILogger<GetDistinctDataFromExcelFilesModel> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public GetDistinctDataFromExcelFilesModel(IFileProvider fileProvider, ILogger<GetDistinctDataFromExcelFilesModel> logger)
+        public GetDistinctDataFromExcelFilesModel(IWebHostEnvironment env, ILogger<GetDistinctDataFromExcelFilesModel> logger)
         {
-            _fileProvider = fileProvider;
+            _env = env;
             _logger = logger;
         }
 
@@ -39,6 +40,7 @@ namespace SampleApp.Pages
 
         public void OnGet()
         {
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
             SourceFiles = _fileProvider.GetDirectoryContents(string.Empty).Where(x => x.Name.Contains("xlsx")).Select(x => new FileItem
             {
                 FileLength = x.Length,
@@ -85,7 +87,7 @@ namespace SampleApp.Pages
                     var header = ExcelWorksheetExtension.GetHeaderColumns(ws);
                     if (header.Length > 0 && header.First() != PHONENUMBER)
                     {
-                        ModelState.AddModelError("First cell must be phoneNumber", $"File thứ {f + 1}: Cột đầu tiên không khải {PHONENUMBER}");
+                        ModelState.AddModelError("First cell must be phoneNumber", $"File thứ {f + 1}: Cột đầu tiên không phải {PHONENUMBER}");
                     }
                     headers.Add(header.ToList());
                 }
