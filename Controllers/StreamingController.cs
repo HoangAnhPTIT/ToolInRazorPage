@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using SampleApp.Data;
+using SampleApp.Data.Entities;
 using SampleApp.Filters;
 using SampleApp.Models;
 using SampleApp.Utilities;
@@ -25,8 +27,9 @@ namespace SampleApp.Controllers
         private readonly AppDbContext _context;
         private readonly long _fileSizeLimit;
         private readonly ILogger<StreamingController> _logger;
+        private readonly IWebHostEnvironment _env;
         private readonly string[] _permittedExtensions = { ".xlsx" };
-        private readonly string _targetFilePath;
+
 
         // Get the default form options so that we can use them to set the default 
         // limits for request body data.
@@ -37,10 +40,11 @@ namespace SampleApp.Controllers
         {
             _logger = logger;
             _context = context;
+            _env = env;
             _fileSizeLimit = config.GetValue<long>("FileSizeLimit");
 
             // To save physical files to a path provided by configuration:
-            _targetFilePath = env.WebRootPath;
+            //_targetFilePath = env.WebRootPath + "/" + HttpContext.User.Identity.Name;
 
             // To save physical files to the temporary files folder, use:
             //_targetFilePath = Path.GetTempPath();
@@ -204,7 +208,7 @@ namespace SampleApp.Controllers
                 UploadDT = DateTime.UtcNow
             };
 
-            _context.File.Add(file);
+            //_context.File.Add(file);
             await _context.SaveChangesAsync();
 
             return Created(nameof(StreamingController), null);
@@ -281,6 +285,7 @@ namespace SampleApp.Controllers
                                 return BadRequest(ModelState);
                             }
 
+                            var _targetFilePath = _env.WebRootPath + "/" + HttpContext.User.Identity.Name;
                             using (var targetStream = System.IO.File.Create(
                                 Path.Combine(_targetFilePath, trustedFileNameForDisplay)))
                             {

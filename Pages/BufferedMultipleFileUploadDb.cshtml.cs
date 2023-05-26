@@ -80,7 +80,7 @@ namespace SampleApp.Pages
                     UploadDT = DateTime.UtcNow
                 };
 
-                _context.File.Add(file);
+                //_context.File.Add(file);
                 await _context.SaveChangesAsync();
             }
 

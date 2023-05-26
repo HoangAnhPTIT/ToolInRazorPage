@@ -1,58 +1,44 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Mime;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using SampleApp.Data;
-using SampleApp.Models;
+using SampleApp.Data.Entities;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mime;
+using System.Threading.Tasks;
 
 namespace SampleApp.Pages
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly AppDbContext _context;
-        private readonly IFileProvider _fileProvider;
-
-        public IndexModel(AppDbContext context, IFileProvider fileProvider)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IWebHostEnvironment _env;
+        public IndexModel(AppDbContext context, IFileProvider fileProvider, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment env)
         {
             _context = context;
-            _fileProvider = fileProvider;
+            _signInManager = signInManager;
+            _env = env;
         }
 
-        public IList<AppFile> DatabaseFiles { get; private set; }
+        //public IList<AppFile> DatabaseFiles { get; private set; }
         public List<IFileInfo> PhysicalFiles { get; private set; }
 
         public async Task OnGetAsync()
         {
-            DatabaseFiles = await _context.File.AsNoTracking().ToListAsync();
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
             PhysicalFiles = _fileProvider.GetDirectoryContents(string.Empty).Where(x => x.Name.Contains("xlsx")).ToList();
-        }
-
-        public async Task<IActionResult> OnGetDownloadDbAsync(int? id)
-        {
-            if (id == null)
-            {
-                return Page();
-            }
-
-            var requestFile = await _context.File.SingleOrDefaultAsync(m => m.Id == id);
-
-            if (requestFile == null)
-            {
-                return Page();
-            }
-
-            // Don't display the untrusted file name in the UI. HTML-encode the value.
-            return File(requestFile.Content, MediaTypeNames.Application.Octet, WebUtility.HtmlEncode(requestFile.UntrustedName));
         }
 
         public IActionResult OnGetDownloadPhysical(string fileName)
         {
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
+
             var downloadFile = _fileProvider.GetFileInfo(fileName);
 
             return PhysicalFile(downloadFile.PhysicalPath, MediaTypeNames.Application.Octet, fileName);

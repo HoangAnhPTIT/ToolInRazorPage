@@ -1,9 +1,8 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Upload Files Sample";
+    ViewData["Title"] = "Trang chủ";
 }
-
 <h1>Tải lên file mới</h1>
 
 <p>Chọn file excel bạn muốn tải lên</p>
@@ -26,7 +25,7 @@
     </div>
 </form>
 
-<h1>Files stored on disk</h1>
+<h1>Danh sách file hiện có</h1>
 
 @if (Model.PhysicalFiles.Count() == 0)
 {

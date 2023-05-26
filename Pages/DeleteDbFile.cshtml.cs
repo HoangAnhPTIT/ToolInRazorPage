@@ -26,7 +26,7 @@ namespace SampleApp.Pages
                 return RedirectToPage("/Index");
             }
 
-            RemoveFile = await _context.File.SingleOrDefaultAsync(m => m.Id == id);
+            //RemoveFile = await _context.File.SingleOrDefaultAsync(m => m.Id == id);
 
             if (RemoveFile == null)
             {
@@ -43,13 +43,13 @@ namespace SampleApp.Pages
                 return RedirectToPage("/Index");
             }
 
-            RemoveFile = await _context.File.FindAsync(id);
+            //RemoveFile = await _context.File.FindAsync(id);
 
-            if (RemoveFile != null)
-            {
-                _context.File.Remove(RemoveFile);
-                await _context.SaveChangesAsync();
-            }
+            //if (RemoveFile != null)
+            //{
+            //    //_context.File.Remove(RemoveFile);
+            //    await _context.SaveChangesAsync();
+            //}
 
             return RedirectToPage("/Index");
         }

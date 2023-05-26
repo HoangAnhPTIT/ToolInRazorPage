@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
@@ -6,11 +7,10 @@ namespace SampleApp.Pages
 {
     public class DeletePhysicalFileModel : PageModel
     {
-        private readonly IFileProvider _fileProvider;
-
-        public DeletePhysicalFileModel(IFileProvider fileProvider)
+        private readonly IWebHostEnvironment _env;
+        public DeletePhysicalFileModel(IWebHostEnvironment env)
         {
-            _fileProvider = fileProvider;
+            _env = env;
         }
 
         public IFileInfo RemoveFile { get; private set; }
@@ -21,6 +21,7 @@ namespace SampleApp.Pages
             {
                 return RedirectToPage("/Index");
             }
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
 
             RemoveFile = _fileProvider.GetFileInfo(fileName);
 
@@ -39,6 +40,7 @@ namespace SampleApp.Pages
                 return RedirectToPage("/Index");
             }
 
+            IFileProvider _fileProvider = new PhysicalFileProvider(_env.WebRootPath + "/" + User.Identity.Name);
             RemoveFile = _fileProvider.GetFileInfo(fileName);
 
             if (RemoveFile.Exists)

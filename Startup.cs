@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using CallMaster.Core.RepositoryModule.Entities;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using SampleApp.Data;
+using SampleApp.Data.Entities;
 using SampleApp.Filters;
 using SampleApp.Services;
 using SampleApp.Services.Implements;
-using System.Reflection;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+using System;
 
 namespace SampleApp
 {
@@ -21,7 +23,7 @@ namespace SampleApp
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
-            _env = env; 
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -31,6 +33,7 @@ namespace SampleApp
             services.AddControllers();
 
             #region snippet_AddRazorPages
+
             services.AddRazorPages(options =>
             {
                 options.Conventions
@@ -52,9 +55,10 @@ namespace SampleApp
                                 new DisableFormValueModelBindingAttribute());
                         });
             });
-            #endregion
 
-            // To list physical files from a path provided by configuration:    
+            #endregion snippet_AddRazorPages
+
+            // To list physical files from a path provided by configuration:
             var physicalProvider = new PhysicalFileProvider(_env.WebRootPath);
 
             // To list physical files in the temporary files folder, use:
@@ -63,7 +67,38 @@ namespace SampleApp
             services.AddSingleton<IFileProvider>(physicalProvider);
             services.AddScoped<IValidateFilePhoneNumber, ValidateFilePhoneNumber>();
 
-            services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
+            services.AddDbContextPool<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+
+            services
+               .AddIdentity<ApplicationUser, ApplicationRole>()
+               .AddEntityFrameworkStores<AppDbContext>()
+               .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 8;
+
+                options.User.RequireUniqueEmail = false;
+            });
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                //options.Cookie.HttpOnly = true;
+                //options.Cookie.Expiration
+
+                //options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+
+                options.LoginPath = "/Login";
+                options.LogoutPath = "/Logout";
+                
+                //options.AccessDeniedPath = "/Identity/AccessDenied";
+                //options.SlidingExpiration = true;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -80,7 +115,11 @@ namespace SampleApp
             app.UseStaticFiles();
             app.UseRouting();
 
-            app.UseEndpoints(endpoints => {
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
