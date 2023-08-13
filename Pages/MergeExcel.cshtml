@@ -1,0 +1,82 @@
+﻿@page
+@model SampleApp.Pages.MergeExcelModel
+@{
+    ViewData["Title"] = "Nối file excel";
+}
+
+
+<h1>Nối các file và sheet excel</h1>
+
+<div class="mt-3">
+    <h4>Chọn file đầu vào</h4>
+    <form method="post">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        <input id="selectall-checkbox" type="checkbox">
+
+                    </th>
+                    <th>
+                        Tên file
+                    </th>
+                    <th>
+                        Kích thước (bytes)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.SourceFiles.Count(); i++)
+                {
+                    <tr>
+                        <td>
+                            <input class="select-checkbox" FileDirection="0" asp-for="SourceFiles[i].IsSelected">
+                            <input hidden asp-for="SourceFiles[i].FilePath">
+                        </td>
+                        <td>
+                            <b>@Model.SourceFiles.ElementAt(i).FileName</b><br>
+
+                        </td>
+                        <td class="">
+                            @Model.SourceFiles.ElementAt(i).FileLength.ToString("N0")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div>
+            <ul class="pagination">
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a asp-page="/MergeExcel" asp-route-currentpage="@i" class="page-link">@i</a>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        @if (Model.ErrorMessage != null && Model.ErrorMessage.Count() > 0)
+        {
+            @foreach (var message in Model.ErrorMessage)
+            {
+                <p class="text-danger">@message</p>
+            }
+        }
+
+
+        <div class="d-flex align-items-center mb-3">
+            <button asp-page-handler="Handler" class="btn btn-primary me-2" type="submit">Nối file</button>
+        </div>
+
+    </form>
+</div>
+
+
+@section Scripts {
+    <script>
+        $("#selectall-checkbox").click(function () {
+            $(".select-checkbox").attr('checked', this.checked);
+        });
+    </script>
+}

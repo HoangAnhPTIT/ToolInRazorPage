@@ -30,7 +30,7 @@ namespace SampleApp.Pages
         [BindProperty]
         public bool RemoveDuplication { get; set; }
 
-        public IEnumerable<string> ErrorMessage { get; set; }
+        public IEnumerable<string> ErrorMessage { get; set; } = new List<string>();
 
         public void OnGet()
         {

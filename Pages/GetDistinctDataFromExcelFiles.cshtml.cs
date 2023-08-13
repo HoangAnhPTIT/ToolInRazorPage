@@ -36,7 +36,7 @@ namespace SampleApp.Pages
         [BindProperty]
         public bool IsCompareProcessing { get; set; }
 
-        public List<string> ErrorMessage { get; set; }
+        public List<string> ErrorMessage { get; set; } = new List<string>();
 
         public void OnGet()
         {
