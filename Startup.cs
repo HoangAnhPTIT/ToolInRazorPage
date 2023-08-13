@@ -1,6 +1,7 @@
 ﻿using CallMaster.Core.RepositoryModule.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -66,6 +67,7 @@ namespace SampleApp
 
             services.AddSingleton<IFileProvider>(physicalProvider);
             services.AddScoped<IValidateFilePhoneNumber, ValidateFilePhoneNumber>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddDbContextPool<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -85,6 +87,11 @@ namespace SampleApp
                 options.User.RequireUniqueEmail = false;
             });
 
+            services.Configure<FormOptions>(options =>
+            {
+                options.ValueCountLimit = int.MaxValue;
+            });
+
             services.ConfigureApplicationCookie(options =>
             {
                 // Cookie settings
@@ -93,8 +100,8 @@ namespace SampleApp
 
                 //options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
-                options.LoginPath = "/Login";
-                options.LogoutPath = "/Logout";
+                options.LoginPath = "/login";
+                options.LogoutPath = "/logout";
                 
                 //options.AccessDeniedPath = "/Identity/AccessDenied";
                 //options.SlidingExpiration = true;

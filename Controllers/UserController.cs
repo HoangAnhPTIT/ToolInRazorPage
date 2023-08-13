@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SampleApp.Data.Entities;
 using SampleApp.Models;
-using SkiaSharp;
+using SampleApp.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -17,13 +17,14 @@ namespace SampleApp.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
-        public UserController(IWebHostEnvironment env, UserManager<ApplicationUser> userManager)
+        public UserController(IWebHostEnvironment env, UserManager<ApplicationUser> userManager, IUserService userService)
         {
             _env = env;
             _userManager = userManager;
+            _userService = userService;
         }
-
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register(UserRegisterModel model)
@@ -47,6 +48,21 @@ namespace SampleApp.Controllers
                 {
                     result = createResult
                 });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("Password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
+        {
+            try
+            {
+                var result = await _userService.ChangePassword(changePasswordRequest);
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
