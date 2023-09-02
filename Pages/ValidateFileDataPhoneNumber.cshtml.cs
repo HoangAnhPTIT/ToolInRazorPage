@@ -62,6 +62,11 @@ namespace SampleApp.Pages
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var content = _validateFilePhoneNumber.ValidateFile(ModelState, SourceFiles.Select(x => x.FilePath));
 
+            if (!ModelState.IsValid)
+            {
+                ErrorMessage = ModelState.SelectMany(x => x.Value.Errors).Select(e => e.ErrorMessage);
+                return Page();
+            }
             return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8");
         }
     }
